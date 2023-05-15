@@ -1,0 +1,48 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        jcenter()
+        maven {
+            allowInsecureProtocol = true
+            url "https://jitpack.io"
+        }
+        maven {
+            allowInsecureProtocol = true
+            url 'https://www.jitpack.io'
+        }
+        maven {
+            allowInsecureProtocol = true
+            url 'http://developer.huawei.com/repo/'
+        }
+        maven { url "https://maven.aliyun.com/repository/public" }
+    }
+
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        jcenter()
+        maven {
+            allowInsecureProtocol = true
+            url "https://jitpack.io"
+        }
+        maven {
+            allowInsecureProtocol = true
+            url 'https://www.jitpack.io'
+        }
+        maven {
+            allowInsecureProtocol = true
+            url 'http://developer.huawei.com/repo/'
+        }
+        maven { url "https://maven.aliyun.com/repository/public" }
+    }
+    
+}
+rootProject.name = "ShootProject"
+include ':app'
+include ':baselib'

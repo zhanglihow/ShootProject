@@ -1,0 +1,148 @@
+package com.mine.shootproject.service
+
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.net.wifi.WifiManager
+import android.os.IBinder
+import com.mine.shootproject.event.*
+import com.tievd.baselib.utils.TyLog
+import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import java.io.IOException
+import java.io.PrintWriter
+import java.net.InetSocketAddress
+import java.net.Socket
+
+
+/**
+ *
+ * @author zhangli
+ * @email zhanglihow@gmail.com
+ * @time
+ *
+ * 客户端
+ */
+class GreenService : Service() {
+
+    private var job: Job? = null
+    private var client: Socket? = null
+
+    private var isFirstConnect = true
+
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        val ip = getHotspotIpAddress(this)
+        send(ip, "蓝方连接")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        client?.close()
+        job?.cancel()
+        job = null
+    }
+
+    fun send(ipAddress: String, msg: String) {
+        if (job != null) {
+            return
+        }
+        job = GlobalScope.launch {
+            withContext(context = Dispatchers.IO) {
+                EventBus.getDefault().post(ServerStateEvent("开启 Socket"))
+
+                client = Socket()
+                client?.soTimeout = 60000
+                client?.bind(null)
+
+                EventBus.getDefault().post(ServerStateEvent("如果六十秒内未连接成功则放弃"))
+
+                client?.connect(InetSocketAddress(ipAddress, RedService.PORT), 30000)
+
+                EventBus.getDefault().post(ServerStateEvent("连接成功"))
+
+                if (isFirstConnect) {
+                    isFirstConnect = false
+                    sendMessage(msg)
+                }
+
+                try {
+                    /**得到输入流 */
+                    val inputStream = client?.getInputStream()
+                    /**
+                     * 实现数据循环接收
+                     */
+                    while (client?.isConnected == true) {
+                        val bt = ByteArray(50)
+                        inputStream?.read(bt)
+                        val str = String(bt, Charsets.UTF_8) //编码方式  解决收到数据乱码
+                        if (str.contains("心跳")) {
+                            EventBus.getDefault().post(BeatEvent(2))
+                        } else {
+                            EventBus.getDefault().post(GetMsgEvent(str))
+                        }
+                        TyLog.i("str:$str")
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    releaseSocket()
+                    EventBus.getDefault().post(ServerStateEvent("出现异常"))
+                }
+            }
+        }
+    }
+
+    private fun getHotspotIpAddress(context: Context): String {
+        val wifiManager =
+            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+        val wifiInfo = wifiManager?.connectionInfo
+        if (wifiInfo != null) {
+            val dhcpInfo = wifiManager.dhcpInfo
+            if (dhcpInfo != null) {
+                val address = dhcpInfo.gateway
+                return ((address and 0xFF).toString() + "." + (address shr 8 and 0xFF)
+                        + "." + (address shr 16 and 0xFF)
+                        + "." + (address shr 24 and 0xFF))
+            }
+        }
+        return ""
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    open fun state(event: PostMsgEvent) {
+        sendMessage(event.msg)
+    }
+
+    /**
+     * @steps write();
+     * @effect 发送消息
+     */
+    private fun sendMessage(str: String?) {
+        if (client != null && client?.isConnected == true) {
+            val out = PrintWriter(client?.getOutputStream())
+            out.print(str)
+            out.flush()
+            EventBus.getDefault().post(ConnectEvent())
+        } else {
+            EventBus.getDefault().post(ServerStateEvent("发送消息失败 " + client.toString()))
+        }
+    }
+
+    /*释放资源*/
+    private fun releaseSocket() {
+        job?.cancel()
+        job = null
+        client?.close()
+        client = null
+        val ip = getHotspotIpAddress(this)
+        send(ip, "蓝方连接")
+    }
+
+}

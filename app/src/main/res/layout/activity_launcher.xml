@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.LauncherActivity">
+
+    <com.opensource.svgaplayer.SVGAImageView
+        android:id="@+id/svga_view"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:source="home_out.svga"
+        app:autoPlay="true"
+        android:background="#00ffffff" />
+
+    <ImageView
+        android:id="@+id/iv_center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/icon_start"
+        android:padding="50dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <ImageView
+        android:src="@drawable/icon_jian"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="70dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="100dp"
+        android:layout_height="100dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
