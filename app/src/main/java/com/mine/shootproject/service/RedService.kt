@@ -44,6 +44,7 @@ class RedService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        EventBus.getDefault().register(this)
         startListener()
     }
 
@@ -72,7 +73,14 @@ class RedService : Service() {
                 serverSocket?.soTimeout = 60000
                 if (client == null || client?.isConnected == false) {
                     EventBus.getDefault().post(ServerStateEvent("等待连接...如果六十秒内未连接成功则放弃"))
-                    client = serverSocket?.accept()
+                    try{
+                        client = serverSocket?.accept()
+                    }catch (e:Exception){
+                        e.printStackTrace()
+                        serverSocket=null
+                        job=null
+                        startListener()
+                    }
                 }
             }
             /*连接成功的话  发送心跳包*/
@@ -93,7 +101,7 @@ class RedService : Service() {
                     val bt = ByteArray(50)
                     inputStream?.read(bt)
                     val str = String(bt, Charsets.UTF_8) //编码方式  解决收到数据乱码
-                    if (str.contains("蓝方连接")) {
+                    if (str.contains("绿方连接")) {
                         EventBus.getDefault().post(ConnectEvent())
                     } else {
                         EventBus.getDefault().post(GetMsgEvent(str))
@@ -109,7 +117,7 @@ class RedService : Service() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    open fun state(event: PostMsgEvent) {
+     fun state(event: PostMsgEvent) {
         sendMessage(event.msg)
     }
 

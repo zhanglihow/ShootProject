@@ -7,14 +7,6 @@
     android:background="@color/white"
     tools:context=".ui.LauncherActivity">
 
-    <com.opensource.svgaplayer.SVGAImageView
-        android:id="@+id/svga_view"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        app:source="home_out.svga"
-        app:autoPlay="true"
-        android:background="#00ffffff" />
-
     <ImageView
         android:id="@+id/iv_center"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,6 +18,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <com.opensource.svgaplayer.SVGAImageView
+        android:id="@+id/svga_view"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:autoPlay="true"
+        android:background="#00ffffff" />
 
     <ImageView
         android:src="@drawable/icon_jian"

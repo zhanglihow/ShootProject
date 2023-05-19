@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mine.shootproject">
-
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -35,6 +35,8 @@
 
     <uses-permission android:name="android.permission.TETHER_PRIVILEGED"/>
 
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature
         android:name="android.hardware.camera"
@@ -53,8 +55,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.CameraActivity"
+            android:name=".ui.MyCameraActivity"
             android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:exported="false" />
         <activity
             android:name=".ui.ChooseActivity"
@@ -79,6 +82,14 @@
 
         <service android:name=".service.GreenService"/>
         <service android:name=".service.RedService"/>
+        <service android:name=".service.VoiceService"/>
+
+        <activity android:name=".utils.ColorBlobDetectionActivity2"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        <activity android:name=".utils.MyMainActivity"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
     </application>
 
 </manifest>

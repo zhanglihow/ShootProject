@@ -12,28 +12,15 @@
         android:layout_height="match_parent"
         android:background="#00ffffff"
         android:layout_margin="30dp"
-        app:autoPlay="true"
-        android:visibility="gone"
-        app:source="ready_wear_red.svga" />
-
-    <com.opensource.svgaplayer.SVGAImageView
-        android:id="@+id/green_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#00ffffff"
-        android:layout_margin="30dp"
-        app:autoPlay="true"
-        android:visibility="gone"
-        app:source="ready_wear_green.svga" />
-
+        app:autoPlay="true" />
 
     <com.opensource.svgaplayer.SVGAImageView
         android:id="@+id/out_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#00ffffff"
-        app:autoPlay="true"
-        app:source="home_out.svga" />
+        app:autoPlay="true" />
+
     <ImageView
         android:src="@drawable/icon_tip"
         app:layout_constraintBottom_toBottomOf="parent"

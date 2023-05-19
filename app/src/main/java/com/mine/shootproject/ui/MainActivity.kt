@@ -3,42 +3,81 @@ package com.mine.shootproject.ui
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.os.Vibrator
 import android.view.View
 import com.android.dx.stock.ProxyBuilder
+import com.bumptech.glide.Glide
 import com.mine.shootproject.BuildConfig
 import com.mine.shootproject.databinding.ActivityMainBinding
+import com.mine.shootproject.event.VoiceEvent
+import com.mine.shootproject.utils.ColorBlobDetectionActivity
+import com.mine.shootproject.utils.ColorBlobDetectionActivity2
+import com.opensource.svgaplayer.SVGADrawable
+import com.opensource.svgaplayer.SVGAParser
+import com.opensource.svgaplayer.SVGAVideoEntity
 import com.tievd.baselib.base.BaseActivity
 import com.tievd.baselib.base.BaseViewModel
+import org.greenrobot.eventbus.EventBus
 import java.lang.reflect.InvocationHandler
 
-class MainActivity : BaseActivity<BaseViewModel,ActivityMainBinding>() {
+class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
 
-    companion object{
-        fun start(context: Context){
-            val intent=Intent(context,MainActivity::class.java)
+    companion object {
+        fun start(context: Context) {
+            val intent = Intent(context, MainActivity::class.java)
             context.startActivity(intent)
         }
     }
 
+    private fun start(){
+        val vibrator: Vibrator =
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        vibrator.vibrate(100)
+        EventBus.getDefault().post(VoiceEvent(2))
+        WaiteActivity.start(this)
+        finish()
+    }
+
     override fun initView() {
-        if(BuildConfig.FLAVOR == "red"){
-            vb.redView.visibility= View.VISIBLE
-            vb.greenView.stopAnimation()
-            vb.greenView.clear()
+        if (BuildConfig.FLAVOR == "red") {
             vb.redView.setOnClickListener {
-                WaiteActivity.start(this)
-                finish()
+                start()
             }
+            SVGAParser(this).decodeFromAssets("ready_wear_red.svga", object : SVGAParser.ParseCompletion {
+                override fun onComplete(videoItem: SVGAVideoEntity) {
+                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
+                    vb.redView.startAnimation()
+                }
+
+                override fun onError() {
+                }
+            })
+
             startTethering(this)
-        }else{
-            vb.greenView.visibility= View.VISIBLE
-            vb.redView.stopAnimation()
-            vb.redView.clear()
-            vb.greenView.setOnClickListener {
-                WaiteActivity.start(this)
-                finish()
+        } else {
+            vb.redView.setOnClickListener {
+                start()
             }
+            SVGAParser(this).decodeFromAssets("ready_wear_green.svga", object : SVGAParser.ParseCompletion {
+                override fun onComplete(videoItem: SVGAVideoEntity) {
+                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
+                    vb.redView.startAnimation()
+                }
+
+                override fun onError() {
+                }
+            })
         }
+        SVGAParser(this).decodeFromAssets("home_out.svga", object : SVGAParser.ParseCompletion {
+            override fun onComplete(videoItem: SVGAVideoEntity) {
+                vb.outView.setImageDrawable(SVGADrawable(videoItem))
+                vb.outView.startAnimation()
+            }
+
+            override fun onError() {
+            }
+        })
+
     }
 
     override fun initData() {
@@ -48,13 +87,8 @@ class MainActivity : BaseActivity<BaseViewModel,ActivityMainBinding>() {
     }
 
     override fun onDestroy() {
-        if(BuildConfig.FLAVOR == "red"){
-            vb.redView.stopAnimation()
-            vb.redView.clear()
-        }else{
-            vb.greenView.stopAnimation()
-            vb.greenView.clear()
-        }
+        vb.redView.stopAnimation()
+        vb.redView.clear()
         super.onDestroy()
     }
 
@@ -80,8 +114,9 @@ class MainActivity : BaseActivity<BaseViewModel,ActivityMainBinding>() {
                 Int::class.javaPrimitiveType,
                 Boolean::class.javaPrimitiveType, classOnStartTetheringCallback
             )
-            val proxy: Any = ProxyBuilder.forClass(classOnStartTetheringCallback).handler { _, _, _ -> null }
-                .build()
+            val proxy: Any =
+                ProxyBuilder.forClass(classOnStartTetheringCallback).handler { _, _, _ -> null }
+                    .build()
             startTethering.invoke(connectivityManager, 0, false, proxy)
         } catch (e: Exception) {
             e.printStackTrace()

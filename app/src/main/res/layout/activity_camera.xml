@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.CameraActivity">
+    tools:context=".ui.MyCameraActivity">
 
-    <org.opencv.android.JavaCameraView
+    <org.opencv.android.JavaCamera2View
         android:id="@+id/javaCameraView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

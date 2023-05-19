@@ -11,8 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff"
-        app:autoPlay="true"
-        app:source="home_out.svga" />
+        app:autoPlay="true" />
 
     <com.opensource.svgaplayer.SVGAImageView
         android:id="@+id/red_view"
@@ -20,19 +19,7 @@
         android:layout_height="match_parent"
         android:background="#00ffffff"
         android:layout_margin="30dp"
-        app:autoPlay="true"
-        android:visibility="gone"
-        app:source="waite_red.svga" />
-
-    <com.opensource.svgaplayer.SVGAImageView
-        android:id="@+id/green_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#00ffffff"
-        android:layout_margin="30dp"
-        app:autoPlay="true"
-        android:visibility="gone"
-        app:source="waite_green.svga" />
+        app:autoPlay="true" />
 
     <TextView
         android:id="@+id/tv_state"

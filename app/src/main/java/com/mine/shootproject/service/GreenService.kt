@@ -38,7 +38,7 @@ class GreenService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
+        EventBus.getDefault().register(this)
         val ip = getHotspotIpAddress(this)
         send(ip, "蓝方连接")
     }
@@ -64,7 +64,14 @@ class GreenService : Service() {
 
                 EventBus.getDefault().post(ServerStateEvent("如果六十秒内未连接成功则放弃"))
 
-                client?.connect(InetSocketAddress(ipAddress, RedService.PORT), 30000)
+                try{
+                    client?.connect(InetSocketAddress(ipAddress, RedService.PORT), 30000)
+                }catch (e:Exception){
+                    e.printStackTrace()
+                    job=null
+                    client=null
+                    send(ipAddress,msg)
+                }
 
                 EventBus.getDefault().post(ServerStateEvent("连接成功"))
 
@@ -116,7 +123,7 @@ class GreenService : Service() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    open fun state(event: PostMsgEvent) {
+     fun state(event: PostMsgEvent) {
         sendMessage(event.msg)
     }
 
