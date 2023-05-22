@@ -13,6 +13,15 @@
         app:camera_id="back"
         app:show_fps="true" />
 
+    <ImageView
+        android:id="@+id/shoot_view"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:autoPlay="true"
+        android:src="@drawable/icon_start"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+
     <TextView
         android:id="@+id/tv_state"
         app:layout_constraintBottom_toBottomOf="parent"

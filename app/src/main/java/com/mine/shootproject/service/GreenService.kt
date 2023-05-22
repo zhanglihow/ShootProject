@@ -1,18 +1,19 @@
 package com.mine.shootproject.service
 
+import android.R.attr.data
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
 import android.os.IBinder
+import android.system.Os.socket
 import com.mine.shootproject.event.*
 import com.tievd.baselib.utils.TyLog
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.io.IOException
-import java.io.PrintWriter
+import java.io.*
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -40,7 +41,7 @@ class GreenService : Service() {
         super.onCreate()
         EventBus.getDefault().register(this)
         val ip = getHotspotIpAddress(this)
-        send(ip, "蓝方连接")
+        send(ip, "绿方连接")
     }
 
     override fun onDestroy() {
@@ -64,13 +65,13 @@ class GreenService : Service() {
 
                 EventBus.getDefault().post(ServerStateEvent("如果六十秒内未连接成功则放弃"))
 
-                try{
+                try {
                     client?.connect(InetSocketAddress(ipAddress, RedService.PORT), 30000)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    job=null
-                    client=null
-                    send(ipAddress,msg)
+                    job = null
+                    client = null
+                    send(ipAddress, msg)
                 }
 
                 EventBus.getDefault().post(ServerStateEvent("连接成功"))
@@ -81,6 +82,13 @@ class GreenService : Service() {
                 }
 
                 try {
+                    client?.tcpNoDelay = true
+                    client?.sendBufferSize = 4096
+                    // 设置输入流的接收缓冲区大小，默认是4KB，即4096字节
+                    client?.receiveBufferSize = 4096
+                    // 作用：每隔一段时间检查服务器是否处于活动状态，如果服务器端长时间没响应，自动关闭客户端socket
+                    // 防止服务器端无效时，客户端长时间处于连接状态
+                    client?.keepAlive = true
                     /**得到输入流 */
                     val inputStream = client?.getInputStream()
                     /**
@@ -123,7 +131,7 @@ class GreenService : Service() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-     fun state(event: PostMsgEvent) {
+    fun state(event: PostMsgEvent) {
         sendMessage(event.msg)
     }
 
@@ -132,14 +140,22 @@ class GreenService : Service() {
      * @effect 发送消息
      */
     private fun sendMessage(str: String?) {
-        if (client != null && client?.isConnected == true) {
-            val out = PrintWriter(client?.getOutputStream())
-            out.print(str)
-            out.flush()
-            EventBus.getDefault().post(ConnectEvent())
-        } else {
-            EventBus.getDefault().post(ServerStateEvent("发送消息失败 " + client.toString()))
+        val thread = Thread {
+            try {
+                val out = PrintWriter(client?.getOutputStream())
+                out.print(str)
+                out.flush()
+                if (str == "绿方连接") {
+                    EventBus.getDefault().post(ConnectEvent())
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+                releaseSocket()
+                EventBus.getDefault().post(ServerStateEvent("发送消息失败" + e.message))
+            }
         }
+        thread.start()
+
     }
 
     /*释放资源*/
@@ -149,7 +165,7 @@ class GreenService : Service() {
         client?.close()
         client = null
         val ip = getHotspotIpAddress(this)
-        send(ip, "蓝方连接")
+        send(ip, "绿方连接")
     }
 
 }

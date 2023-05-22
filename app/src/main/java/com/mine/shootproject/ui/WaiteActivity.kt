@@ -81,10 +81,10 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
         }
 
         //test
-        GlobalScope.launch {
-            delay(2000)
-            start()
-        }
+//        GlobalScope.launch {
+//            delay(2000)
+//            start()
+//        }
     }
 
     override fun initVM() {
@@ -119,6 +119,9 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
      fun state(event: ServerStateEvent) {
         vb.tvState.text = event.msg
+        if(event.msg.contains("连接成功")){
+            start()
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -136,6 +139,7 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
         } else {
             ToastUtils.showToast("收到心跳成功")
         }
+        start()
     }
 
 }

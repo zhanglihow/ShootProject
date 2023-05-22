@@ -35,6 +35,8 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         vibrator.vibrate(100)
         EventBus.getDefault().post(VoiceEvent(2))
         WaiteActivity.start(this)
+//        MyCameraActivity.start(this)
+
         finish()
     }
 

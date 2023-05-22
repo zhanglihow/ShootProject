@@ -5,6 +5,10 @@ plugins {
     id 'kotlin-kapt'
 }
 
+static def packageTime() {
+    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
+}
+
 android {
     compileSdk 32
     buildToolsVersion '32.0.0'
@@ -44,7 +48,7 @@ android {
     }
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "shoot-"+ "${variant.productFlavors[0].name}" +".apk"
+            outputFileName = "shoot-"+ "${variant.productFlavors[0].name}-${packageTime()}" +".apk"
         }
     }
 }

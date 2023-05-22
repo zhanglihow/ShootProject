@@ -4,19 +4,29 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.media.metrics.Event
+import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
+import android.view.View
+import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import com.mine.shootproject.BuildConfig
 import com.mine.shootproject.R
-import com.mine.shootproject.event.BeatEvent
-import com.mine.shootproject.event.ServerStateEvent
-import com.mine.shootproject.event.VoiceEvent
-import com.mine.shootproject.event.VoiceStopEvent
+import com.mine.shootproject.event.*
 import com.mine.shootproject.service.GreenService
 import com.mine.shootproject.service.RedService
+import com.mine.shootproject.ui.MyCameraActivity.Companion.AREA_MAX
 import com.mine.shootproject.utils.ColorBlobDetector
 import com.mine.shootproject.utils.MyUtils
+import com.opensource.svgaplayer.SVGADrawable
+import com.opensource.svgaplayer.SVGAImageView
+import com.opensource.svgaplayer.SVGAParser
+import com.opensource.svgaplayer.SVGAVideoEntity
 import com.tievd.baselib.utils.ToastUtils
 import com.tievd.baselib.utils.TyLog
 import org.greenrobot.eventbus.EventBus
@@ -29,6 +39,7 @@ import org.opencv.imgproc.Imgproc
 
 class MyCameraActivity : CameraActivity() {
     companion object {
+        const val AREA_MAX = 200000
         fun start(context: Context) {
             val intent = Intent(context, MyCameraActivity::class.java)
             context.startActivity(intent)
@@ -42,6 +53,9 @@ class MyCameraActivity : CameraActivity() {
         findViewById(R.id.javaCameraView)
     }
 
+    private val shootView: ImageView by lazy {
+        findViewById(R.id.shoot_view)
+    }
     private var mRgba: Mat? = null
     private var mBlobColorRgba: Scalar? = null
     private var mBlobColorHsv: Scalar? = null
@@ -50,49 +64,72 @@ class MyCameraActivity : CameraActivity() {
     private var SPECTRUM_SIZE: Size? = null
     private var CONTOUR_COLOR: Scalar? = null
 
+    private var shootMat: Mat? = null
+
     private val backDialog by lazy {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
             .setTitle("提示")
             .setMessage("是否退出游戏？")
-            .setNegativeButton("取消"){dialog, which ->
+            .setNegativeButton("取消") { dialog, which ->
                 dialog.dismiss()
             }
-            .setPositiveButton("确定"){dialog, which ->
+            .setPositiveButton("确定") { dialog, which ->
                 dialog.dismiss()
                 vibrator.cancel()
                 EventBus.getDefault().post(VoiceStopEvent(7))
-                startActivity(Intent(this,LauncherActivity::class.java))
+                EventBus.getDefault().post(PostMsgEvent("out"))
+                startActivity(Intent(this, LauncherActivity::class.java))
                 finish()
             }
             .create()
     }
+
+    private val outDialog by lazy {
+        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
+            .setTitle("提示")
+            .setMessage("对方退出游戏，回到主页面")
+            .setNegativeButton("取消") { dialog, which ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("确定") { dialog, which ->
+                dialog.dismiss()
+                vibrator.cancel()
+                startActivity(Intent(this, LauncherActivity::class.java))
+                finish()
+            }
+            .create()
+    }
+
 
     private val shootDialog by lazy {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
             .setTitle("提示")
             .setMessage("恭喜你击中对方，回到主页面")
-            .setNegativeButton("取消"){dialog, which ->
+            .setNegativeButton("取消") { dialog, which ->
                 dialog.dismiss()
             }
-            .setPositiveButton("确定"){dialog, which ->
+            .setPositiveButton("确定") { dialog, which ->
                 dialog.dismiss()
                 vibrator.cancel()
                 EventBus.getDefault().post(VoiceStopEvent(7))
-                startActivity(Intent(this,LauncherActivity::class.java))
+                startActivity(Intent(this, LauncherActivity::class.java))
                 finish()
             }
             .create()
     }
 
-    private val shootNotDialog by lazy {
+    private val shootedDialog by lazy {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
             .setTitle("提示")
-            .setMessage("很遗憾，没有击中，请继续游戏")
-            .setNegativeButton("取消"){dialog, which ->
+            .setMessage("很遗憾，你被击中了,是否回到主页面")
+            .setNegativeButton("取消") { dialog, which ->
                 dialog.dismiss()
             }
-            .setPositiveButton("确定"){dialog, which ->
+            .setPositiveButton("确定") { dialog, which ->
                 dialog.dismiss()
+                vibrator.cancel()
+                startActivity(Intent(this, LauncherActivity::class.java))
+                finish()
             }
             .create()
     }
@@ -100,14 +137,27 @@ class MyCameraActivity : CameraActivity() {
     private val vibrator by lazy {
         getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
-    private val patter = longArrayOf(200, 200, 200)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         EventBus.getDefault().post(VoiceEvent(7, true))
 
         setContentView(R.layout.activity_camera)
+
+        shootView.setOnClickListener {
+            startShoot()
+            if (shootMat != null) {
+                ToastUtils.showToast("恭喜你，击中对方，赢得游戏")
+                shootIn()
+            } else {
+                ToastUtils.showToast("失去目标，请重新射击")
+                shootView.visibility = View.GONE
+                noShoot()
+            }
+        }
+        EventBus.getDefault().register(this)
     }
 
     override fun onDestroy() {
@@ -116,21 +166,20 @@ class MyCameraActivity : CameraActivity() {
     }
 
     override fun onBackPressed() {
-//        super.onBackPressed()
         backDialog.show()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-     fun beat(event: BeatEvent) {
-        if (event.type == 1) {
-            ToastUtils.showToast("发送心跳成功")
-        } else {
-            ToastUtils.showToast("收到心跳成功")
-        }
+    fun beat(event: BeatEvent) {
+//        if (event.type == 1) {
+//            ToastUtils.showToast("发送心跳成功")
+//        } else {
+//            ToastUtils.showToast("收到心跳成功")
+//        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-     fun state(event: ServerStateEvent) {
+    fun state(event: ServerStateEvent) {
         tvState.text = event.msg
     }
 
@@ -156,7 +205,7 @@ class MyCameraActivity : CameraActivity() {
         override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame?): Mat? {
             val rgbMat = inputFrame?.rgba()
             val mat = if (BuildConfig.FLAVOR == "red") {
-                MyUtils.myRed(rgbMat)
+                MyUtils.myGreen(rgbMat)
             } else {
                 MyUtils.myRed(rgbMat)
             }
@@ -179,9 +228,17 @@ class MyCameraActivity : CameraActivity() {
                 source.fromList(element.toList())
                 val rect = Imgproc.minAreaRect(source)
                 val points = arrayOfNulls<Point>(4)
-                val center = rect.center
+                val area = rect.size.area()
                 rect.points(points)
-                TyLog.i("RotateRect: ${points.toList()}, Center：$center")
+                TyLog.i("area：$area")
+                shootMat = if (area > AREA_MAX) {
+                    waitShoot()
+                    ToastUtils.showToast("发现目标，准备射击！")
+                    EventBus.getDefault().post(ShootViewEvent(true))
+                    tmp
+                } else {
+                    null
+                }
                 for (j in 0..3) {
                     Imgproc.line(
                         tmp,
@@ -231,22 +288,25 @@ class MyCameraActivity : CameraActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (OpenCVLoader.initDebug()) {
-            TyLog.i("initDebug true")
-            baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
-        } else {
-            TyLog.i("initDebug false")
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, baseLoaderCallback)
-        }
+        //test
+//        if (BuildConfig.FLAVOR == "green") {
+            if (OpenCVLoader.initDebug()) {
+                TyLog.i("initDebug true")
+                baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
+            } else {
+                TyLog.i("initDebug false")
+                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, baseLoaderCallback)
+            }
+//        }
+
     }
 
     /**
      * 瞄准对方
      */
     private fun waitShoot() {
-        vibrator.vibrate(patter, 0)
-        EventBus.getDefault().post(VoiceEvent(4, true))
-
+        vibrator.vibrate(50)
+        EventBus.getDefault().post(VoiceEvent(4, false))
     }
 
     /**
@@ -255,30 +315,55 @@ class MyCameraActivity : CameraActivity() {
     private fun startShoot() {
         vibrator.cancel()
         vibrator.vibrate(50)
-//        EventBus.getDefault().post(VoiceStopEvent())
         EventBus.getDefault().post(VoiceEvent(5, false))
-
     }
 
     /**
      * 未击中
      */
     private fun noShoot() {
-        vibrator.vibrate(100)
-        EventBus.getDefault().post(VoiceEvent(6, false))
+        vibrator.vibrate(200)
+        EventBus.getDefault().post(VoiceEvent(5, false))
         EventBus.getDefault().post(VoiceEvent(7, true))
-
-        shootNotDialog.show()
     }
 
     /**
      * 击中
      */
     private fun shootIn() {
+        EventBus.getDefault().post(PostMsgEvent("shoot"))
         javaCameraView.disableView()
-        vibrator.vibrate(300)
-        EventBus.getDefault().post(VoiceEvent(5, false))
+        vibrator.vibrate(500)
+        EventBus.getDefault().post(VoiceStopEvent(7))
+        EventBus.getDefault().post(VoiceEvent(6, false))
         shootDialog.show()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun clintConnect(event: GetMsgEvent) {
+        if (event.msg.contains("shoot")) {
+            EventBus.getDefault().unregister(this)
+            javaCameraView.disableView()
+            vibrator.vibrate(500)
+            EventBus.getDefault().post(VoiceStopEvent(7))
+            EventBus.getDefault().post(VoiceEvent(6, false))
+            if(!shootedDialog.isShowing){
+                shootedDialog.show()
+            }
+        } else if (event.msg.contains("out")) {
+            EventBus.getDefault().unregister(this)
+            javaCameraView.disableView()
+            vibrator.vibrate(500)
+            EventBus.getDefault().post(VoiceStopEvent(7))
+            outDialog.show()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun show(event: ShootViewEvent) {
+        if (event.show) {
+            shootView.visibility = View.VISIBLE
+        }
     }
 
 }

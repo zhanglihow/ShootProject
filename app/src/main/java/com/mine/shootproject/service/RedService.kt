@@ -92,13 +92,22 @@ class RedService : Service() {
             }
 
             try {
-                /**得到输入流 */
+//                client?.tcpNoDelay = true
+//                client?.sendBufferSize = 4096
+//                // 设置输入流的接收缓冲区大小，默认是4KB，即4096字节
+//                client?.receiveBufferSize = 4096
+//                // 作用：每隔一段时间检查服务器是否处于活动状态，如果服务器端长时间没响应，自动关闭客户端socket
+//                // 防止服务器端无效时，客户端长时间处于连接状态
+//                client?.keepAlive = true
+
                 val inputStream = client?.getInputStream()
+
                 /**
                  * 实现数据循环接收
                  */
-                while (client?.isConnected == true) {
+                while (client!!.isConnected) {
                     val bt = ByteArray(50)
+                    TyLog.i("bt:$bt")
                     inputStream?.read(bt)
                     val str = String(bt, Charsets.UTF_8) //编码方式  解决收到数据乱码
                     if (str.contains("绿方连接")) {
