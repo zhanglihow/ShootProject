@@ -10,13 +10,13 @@ static def packageTime() {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
     buildToolsVersion '32.0.0'
 
     defaultConfig {
         applicationId "com.mine.shootproject"
         minSdk 23
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
         flavorDimensions "default"
@@ -42,8 +42,10 @@ android {
     }
     productFlavors {
         red {
+            manifestPlaceholders = [APP_NAME: "@string/app_name_red"]
         }
         green {
+            manifestPlaceholders = [APP_NAME: "@string/app_name_green"]
         }
     }
     android.applicationVariants.all { variant ->
@@ -65,14 +67,12 @@ dependencies {
 
     implementation project(path: ':baselib')
 
-//    implementation 'com.github.CarGuo.GSYVideoPlayer:GSYVideoPlayer:v8.3.5-release-jitpack'
-
-//    implementation 'com.github.yyued:SVGAPlayer-Android:2.6.1'
+    implementation 'com.github.CarGuo.GSYVideoPlayer:GSYVideoPlayer:v8.3.5-release-jitpack'
 
     implementation 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'
 
     implementation 'com.quickbirdstudios:opencv:4.5.3.0'
 
     implementation 'com.github.yyued:SVGAPlayer-Android:2.6.1'
-//    implementation 'com.github.YvesCheung:SVGAGlidePlugin:4.13.1'
+    implementation 'com.tencent.bugly:crashreport:latest.release'
 }

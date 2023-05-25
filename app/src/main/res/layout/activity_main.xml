@@ -6,13 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <com.opensource.svgaplayer.SVGAImageView
+    <ImageView
         android:id="@+id/red_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#00ffffff"
-        android:layout_margin="30dp"
-        app:autoPlay="true" />
+        android:padding="50dp" />
 
     <com.opensource.svgaplayer.SVGAImageView
         android:id="@+id/out_view"

@@ -107,7 +107,7 @@ class RedService : Service() {
                  */
                 while (client!!.isConnected) {
                     val bt = ByteArray(50)
-                    TyLog.i("bt:$bt")
+//                    TyLog.i("bt:$bt")
                     inputStream?.read(bt)
                     val str = String(bt, Charsets.UTF_8) //编码方式  解决收到数据乱码
                     if (str.contains("绿方连接")) {

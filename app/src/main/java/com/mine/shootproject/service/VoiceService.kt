@@ -50,10 +50,11 @@ class VoiceService : Service() {
         //初始化，指定是最大4个Stream流，使用默认的Stream：TYPE_MUSIC
         soundPoolHelper = SoundPoolHelper(10, SoundPoolHelper.TYPE_MUSIC)
             .setRingtoneType(SoundPoolHelper.RING_TYPE_MUSIC) //加载默认音频，因为上面指定了，所以其默认是：RING_TYPE_MUSIC
-            .load(this, "voice_start_1", R.raw.voice_start_1)
-            .load(this, "voice_start_2", R.raw.voice_start_2)
-            .load(this, "voice_all_start", R.raw.voice_all_start)
-            .load(this, "voice_shoot", R.raw.voice_shoot)
+            .load(this, "start_1", R.raw.start1)
+            .load(this, "start_2", R.raw.start2)
+            .load(this, "all_start", R.raw.all_start)
+            .load(this, "wait_shoot", R.raw.wait_shoot)
+            .load(this, "shoot_click", R.raw.shoot_click)
             .load(this, "shoot_ok", R.raw.shoot_ok)
             .load(this, "shoot_not", R.raw.shoot_not)
     }
@@ -62,25 +63,28 @@ class VoiceService : Service() {
     fun voice(event: VoiceEvent) {
         when (event.type) {
             1 -> {
-                soundPoolHelper?.play("voice_start_1", event.isLoop)
+                soundPoolHelper?.play("start_1", event.isLoop)
             }
             2 -> {
-                soundPoolHelper?.play("voice_start_2", event.isLoop)
+                soundPoolHelper?.play("start_2", event.isLoop)
             }
             3 -> {
-                soundPoolHelper?.stop("voice_start_2")
-                soundPoolHelper?.play("voice_all_start", event.isLoop)
+                soundPoolHelper?.stop("start_2")
+                soundPoolHelper?.play("all_start", event.isLoop)
             }
             4 -> {
-                soundPoolHelper?.play("voice_shoot", event.isLoop)
+                soundPoolHelper?.play("wait_shoot", event.isLoop)
             }
             5 -> {
-                soundPoolHelper?.play("shoot_not", event.isLoop)
+                soundPoolHelper?.play("shoot_click", event.isLoop)
             }
             6 -> {
                 soundPoolHelper?.play("shoot_ok", event.isLoop)
             }
             7 -> {
+                soundPoolHelper?.play("shoot_not", event.isLoop)
+            }
+            8-> {
                 playLong()
             }
         }
@@ -90,24 +94,27 @@ class VoiceService : Service() {
     fun voiceStop(event: VoiceStopEvent) {
         when (event.type) {
             1 -> {
-                soundPoolHelper?.stop("voice_start_1")
+                soundPoolHelper?.stop("start_1")
             }
             2 -> {
-                soundPoolHelper?.stop("voice_start_2")
+                soundPoolHelper?.stop("start_2")
             }
             3 -> {
-                soundPoolHelper?.stop("voice_all_start")
+                soundPoolHelper?.stop("all_start")
             }
             4 -> {
-                soundPoolHelper?.stop("voice_shoot")
+                soundPoolHelper?.stop("wait_shoot")
             }
             5 -> {
-                soundPoolHelper?.stop("shoot_not")
+                soundPoolHelper?.stop("shoot_click")
             }
             6 -> {
                 soundPoolHelper?.stop("shoot_ok")
             }
             7 -> {
+                soundPoolHelper?.stop("shoot_not")
+            }
+            8-> {
                 stopLong()
             }
         }

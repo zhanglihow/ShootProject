@@ -235,7 +235,6 @@ public class MyUtils {
 ////        Mat element = getStructuringElement(MORPH_RECT, new Size(5, 5));
         morphologyEx(imgThresholded, imgThresholded, MORPH_OPEN, element);
 //        element.release();
-        mat.release();
         imgHSV.release();
 
         return imgThresholded;

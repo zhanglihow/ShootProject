@@ -6,6 +6,7 @@ import android.os.Vibrator
 import android.view.View
 import com.bumptech.glide.Glide
 import com.mine.shootproject.BuildConfig
+import com.mine.shootproject.R
 import com.mine.shootproject.databinding.ActivityWaiteBinding
 import com.mine.shootproject.event.*
 import com.mine.shootproject.service.GreenService
@@ -17,6 +18,7 @@ import com.tievd.baselib.base.BaseActivity
 import com.tievd.baselib.base.BaseViewModel
 import com.tievd.baselib.utils.ToastUtils
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
@@ -45,28 +47,14 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
         setCustomActionBar("等待双方准备完成", false)
 
         if (BuildConfig.FLAVOR == "red") {
-            SVGAParser(this).decodeFromAssets("waite_red.svga", object : SVGAParser.ParseCompletion {
-                override fun onComplete(videoItem: SVGAVideoEntity) {
-                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
-                    vb.redView.startAnimation()
-                }
-                override fun onError() {
-                }
-            })
+            Glide.with(this).load(R.drawable.icon_red_wait).into(vb.redView)
         } else {
-            SVGAParser(this).decodeFromAssets("waite_green.svga", object : SVGAParser.ParseCompletion {
-                override fun onComplete(videoItem: SVGAVideoEntity) {
-                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
-                    vb.redView.startAnimation()
-                }
-                override fun onError() {
-                }
-            })
+            Glide.with(this).load(R.drawable.icon_green_wait).into(vb.redView)
         }
         SVGAParser(this).decodeFromAssets("home_out.svga", object : SVGAParser.ParseCompletion {
             override fun onComplete(videoItem: SVGAVideoEntity) {
-                vb.redView.setImageDrawable(SVGADrawable(videoItem))
-                vb.redView.startAnimation()
+                vb.outView.setImageDrawable(SVGADrawable(videoItem))
+                vb.outView.startAnimation()
             }
             override fun onError() {
             }
@@ -80,7 +68,7 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
             startService(Intent(this, GreenService::class.java))
         }
 
-        //test
+        //todo test
 //        GlobalScope.launch {
 //            delay(2000)
 //            start()
@@ -91,18 +79,26 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
     }
 
     override fun onDestroy() {
-        vb.redView.stopAnimation()
-        vb.redView.clear()
+        job?.cancel()
+        vb.outView.stopAnimation()
+        vb.outView.clear()
         super.onDestroy()
     }
 
+    private var job: Job?=null
     private fun start(){
-        val vibrator: Vibrator =
-            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        vibrator.vibrate(100)
-        EventBus.getDefault().post(VoiceEvent(3))
-        MyCameraActivity.start(this)
-        finish()
+        if(job!=null){
+            return
+        }
+        job=GlobalScope.launch {
+            EventBus.getDefault().post(VoiceEvent(3))
+            delay(2000)
+            val vibrator: Vibrator =
+                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator.vibrate(100)
+            MyCameraActivity.start(this@WaiteActivity)
+            finish()
+        }
     }
 
 

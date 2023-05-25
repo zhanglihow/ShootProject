@@ -8,6 +8,7 @@ import android.view.View
 import com.android.dx.stock.ProxyBuilder
 import com.bumptech.glide.Glide
 import com.mine.shootproject.BuildConfig
+import com.mine.shootproject.R
 import com.mine.shootproject.databinding.ActivityMainBinding
 import com.mine.shootproject.event.VoiceEvent
 import com.mine.shootproject.utils.ColorBlobDetectionActivity
@@ -35,8 +36,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         vibrator.vibrate(100)
         EventBus.getDefault().post(VoiceEvent(2))
         WaiteActivity.start(this)
-//        MyCameraActivity.start(this)
-
         finish()
     }
 
@@ -45,30 +44,13 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
             vb.redView.setOnClickListener {
                 start()
             }
-            SVGAParser(this).decodeFromAssets("ready_wear_red.svga", object : SVGAParser.ParseCompletion {
-                override fun onComplete(videoItem: SVGAVideoEntity) {
-                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
-                    vb.redView.startAnimation()
-                }
-
-                override fun onError() {
-                }
-            })
-
+            Glide.with(this).load(R.drawable.icon_red_ready).into(vb.redView)
             startTethering(this)
         } else {
             vb.redView.setOnClickListener {
                 start()
             }
-            SVGAParser(this).decodeFromAssets("ready_wear_green.svga", object : SVGAParser.ParseCompletion {
-                override fun onComplete(videoItem: SVGAVideoEntity) {
-                    vb.redView.setImageDrawable(SVGADrawable(videoItem))
-                    vb.redView.startAnimation()
-                }
-
-                override fun onError() {
-                }
-            })
+            Glide.with(this).load(R.drawable.icon_green_ready).into(vb.redView)
         }
         SVGAParser(this).decodeFromAssets("home_out.svga", object : SVGAParser.ParseCompletion {
             override fun onComplete(videoItem: SVGAVideoEntity) {
@@ -89,8 +71,8 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     }
 
     override fun onDestroy() {
-        vb.redView.stopAnimation()
-        vb.redView.clear()
+        vb.outView.stopAnimation()
+        vb.outView.clear()
         super.onDestroy()
     }
 

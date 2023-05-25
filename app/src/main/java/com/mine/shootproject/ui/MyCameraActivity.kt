@@ -1,34 +1,24 @@
 package com.mine.shootproject.ui
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.media.metrics.Event
-import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
 import com.mine.shootproject.BuildConfig
 import com.mine.shootproject.R
 import com.mine.shootproject.event.*
-import com.mine.shootproject.service.GreenService
-import com.mine.shootproject.service.RedService
-import com.mine.shootproject.ui.MyCameraActivity.Companion.AREA_MAX
 import com.mine.shootproject.utils.ColorBlobDetector
 import com.mine.shootproject.utils.MyUtils
-import com.opensource.svgaplayer.SVGADrawable
-import com.opensource.svgaplayer.SVGAImageView
-import com.opensource.svgaplayer.SVGAParser
-import com.opensource.svgaplayer.SVGAVideoEntity
+import com.mine.shootproject.weight.MuVideoView
+import com.shuyu.gsyvideoplayer.listener.VideoAllCallBack
 import com.tievd.baselib.utils.ToastUtils
 import com.tievd.baselib.utils.TyLog
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -56,6 +46,14 @@ class MyCameraActivity : CameraActivity() {
     private val shootView: ImageView by lazy {
         findViewById(R.id.shoot_view)
     }
+
+    private val inVideoView: MuVideoView by lazy {
+        findViewById(R.id.video_in_view)
+    }
+    private val notVideoView: MuVideoView by lazy {
+        findViewById(R.id.video_not_view)
+    }
+
     private var mRgba: Mat? = null
     private var mBlobColorRgba: Scalar? = null
     private var mBlobColorHsv: Scalar? = null
@@ -63,6 +61,8 @@ class MyCameraActivity : CameraActivity() {
     private var mSpectrum: Mat? = null
     private var SPECTRUM_SIZE: Size? = null
     private var CONTOUR_COLOR: Scalar? = null
+
+    private var setMatJbo: Job? = null
 
     private var shootMat: Mat? = null
 
@@ -76,7 +76,7 @@ class MyCameraActivity : CameraActivity() {
             .setPositiveButton("确定") { dialog, which ->
                 dialog.dismiss()
                 vibrator.cancel()
-                EventBus.getDefault().post(VoiceStopEvent(7))
+                EventBus.getDefault().post(VoiceStopEvent(8))
                 EventBus.getDefault().post(PostMsgEvent("out"))
                 startActivity(Intent(this, LauncherActivity::class.java))
                 finish()
@@ -111,7 +111,7 @@ class MyCameraActivity : CameraActivity() {
             .setPositiveButton("确定") { dialog, which ->
                 dialog.dismiss()
                 vibrator.cancel()
-                EventBus.getDefault().post(VoiceStopEvent(7))
+                EventBus.getDefault().post(VoiceStopEvent(8))
                 startActivity(Intent(this, LauncherActivity::class.java))
                 finish()
             }
@@ -142,26 +142,30 @@ class MyCameraActivity : CameraActivity() {
         super.onCreate(savedInstanceState)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        EventBus.getDefault().post(VoiceEvent(7, true))
+        EventBus.getDefault().post(VoiceEvent(8, true))
 
         setContentView(R.layout.activity_camera)
 
         shootView.setOnClickListener {
             startShoot()
+            TyLog.i("shootMat  shootMat.value:${shootMat}")
             if (shootMat != null) {
                 ToastUtils.showToast("恭喜你，击中对方，赢得游戏")
                 shootIn()
             } else {
                 ToastUtils.showToast("失去目标，请重新射击")
-                shootView.visibility = View.GONE
                 noShoot()
             }
         }
         EventBus.getDefault().register(this)
+        initVideoView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        setMatJbo?.cancel()
+        inVideoView.release()
+        notVideoView.release()
         javaCameraView.disableView()
     }
 
@@ -230,29 +234,27 @@ class MyCameraActivity : CameraActivity() {
                 val points = arrayOfNulls<Point>(4)
                 val area = rect.size.area()
                 rect.points(points)
-                TyLog.i("area：$area")
-                shootMat = if (area > AREA_MAX) {
+//                TyLog.i("area：$area")
+                if (area > AREA_MAX) {
                     waitShoot()
-                    ToastUtils.showToast("发现目标，准备射击！")
-                    EventBus.getDefault().post(ShootViewEvent(true))
-                    tmp
-                } else {
-                    null
-                }
-                for (j in 0..3) {
-                    Imgproc.line(
-                        tmp,
-                        points[j % 4],
-                        points[(j + 1) % 4],
-                        Scalar(255.0, 255.0, 0.0),
-                        4,
-                        Imgproc.LINE_8
-                    )
+//                    ToastUtils.showToast("发现目标，准备射击！")
+                    if (setMatJbo == null) {
+//                        TyLog.i("shootMat ==null")
+                        setMatJbo = GlobalScope.launch(Dispatchers.Main) {
+                            shootMat = tmp
+//                            TyLog.i("shootMat delay(2000)1111111")
+                            delay(2000)
+                            shootMat=null
+                            cancel()
+                            setMatJbo=null
+//                            TyLog.i("shootMat delay(2000)2222222")
+                        }
+                    }
                 }
             }
             hierarchy.release()
-            TyLog.i("contour size:${contour.size},$contour")
-            return tmp
+//            TyLog.i("contour size:${contour.size},$contour")
+            return rgbMat
         }
     }
 
@@ -288,8 +290,8 @@ class MyCameraActivity : CameraActivity() {
 
     override fun onResume() {
         super.onResume()
-        //test
-//        if (BuildConfig.FLAVOR == "green") {
+        //todo test
+//        if (BuildConfig.FLAVOR == "red") {
             if (OpenCVLoader.initDebug()) {
                 TyLog.i("initDebug true")
                 baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
@@ -315,6 +317,7 @@ class MyCameraActivity : CameraActivity() {
     private fun startShoot() {
         vibrator.cancel()
         vibrator.vibrate(50)
+        EventBus.getDefault().post(VoiceStopEvent(8))
         EventBus.getDefault().post(VoiceEvent(5, false))
     }
 
@@ -323,8 +326,11 @@ class MyCameraActivity : CameraActivity() {
      */
     private fun noShoot() {
         vibrator.vibrate(200)
-        EventBus.getDefault().post(VoiceEvent(5, false))
-        EventBus.getDefault().post(VoiceEvent(7, true))
+        EventBus.getDefault().post(VoiceEvent(7, false))
+        javaCameraView.disableView()
+
+        notVideoView.visibility= View.VISIBLE
+        notVideoView.startPlayLogic()
     }
 
     /**
@@ -333,10 +339,13 @@ class MyCameraActivity : CameraActivity() {
     private fun shootIn() {
         EventBus.getDefault().post(PostMsgEvent("shoot"))
         javaCameraView.disableView()
+        inVideoView.visibility= View.VISIBLE
+        inVideoView.seekOnStart=0
+        inVideoView.startPlayLogic()
+
         vibrator.vibrate(500)
-        EventBus.getDefault().post(VoiceStopEvent(7))
         EventBus.getDefault().post(VoiceEvent(6, false))
-        shootDialog.show()
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -345,25 +354,139 @@ class MyCameraActivity : CameraActivity() {
             EventBus.getDefault().unregister(this)
             javaCameraView.disableView()
             vibrator.vibrate(500)
-            EventBus.getDefault().post(VoiceStopEvent(7))
+            EventBus.getDefault().post(VoiceStopEvent(8))
             EventBus.getDefault().post(VoiceEvent(6, false))
-            if(!shootedDialog.isShowing){
+            if (!shootedDialog.isShowing) {
                 shootedDialog.show()
             }
         } else if (event.msg.contains("out")) {
             EventBus.getDefault().unregister(this)
             javaCameraView.disableView()
             vibrator.vibrate(500)
-            EventBus.getDefault().post(VoiceStopEvent(7))
+            EventBus.getDefault().post(VoiceStopEvent(8))
             outDialog.show()
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun show(event: ShootViewEvent) {
-        if (event.show) {
-            shootView.visibility = View.VISIBLE
-        }
+    private fun initVideoView(){
+        val urlNot = "android.resource://" + packageName + "/" + R.raw.shoot_not_video
+        notVideoView.setUp(urlNot, false,"")
+        notVideoView.setVideoAllCallBack(object: VideoAllCallBack {
+            override fun onStartPrepared(url: String?, vararg objects: Any?) {
+            }
+            override fun onPrepared(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartIcon(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartError(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStop(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStopFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickResume(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickResumeFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickSeekbar(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickSeekbarFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onAutoComplete(url: String?, vararg objects: Any?) {
+                notVideoView.visibility= View.GONE
+                notVideoView.setUp(urlNot, false,"")
+                javaCameraView.enableView()
+                EventBus.getDefault().post(VoiceEvent(8, false))
+            }
+
+            override fun onComplete(url: String?, vararg objects: Any?) {
+//                notVideoView.visibility= View.GONE
+//                notVideoView.onVideoReset()
+//                notVideoView.setUp(urlNot, false,"")
+//                javaCameraView.enableView()
+//                EventBus.getDefault().post(VoiceEvent(8, false))
+            }
+            override fun onEnterFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onQuitFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onQuitSmallWidget(url: String?, vararg objects: Any?) {
+            }
+
+            override fun onEnterSmallWidget(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekVolume(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekPosition(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekLight(url: String?, vararg objects: Any?) {
+            }
+            override fun onPlayError(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartThumb(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickBlank(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
+            }
+        })
+
+        val url = "android.resource://" + packageName + "/" + R.raw.shoot_ok_video
+        inVideoView.setUp(url, false,"")
+        inVideoView.setVideoAllCallBack(object: VideoAllCallBack {
+            override fun onStartPrepared(url: String?, vararg objects: Any?) {
+            }
+            override fun onPrepared(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartIcon(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartError(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStop(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStopFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickResume(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickResumeFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickSeekbar(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickSeekbarFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onAutoComplete(url: String?, vararg objects: Any?) {
+                inVideoView.visibility= View.GONE
+                shootDialog.show()
+            }
+
+            override fun onComplete(url: String?, vararg objects: Any?) {
+                inVideoView.visibility= View.GONE
+                shootDialog.show()
+            }
+            override fun onEnterFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onQuitFullscreen(url: String?, vararg objects: Any?) {
+            }
+            override fun onQuitSmallWidget(url: String?, vararg objects: Any?) {
+            }
+
+            override fun onEnterSmallWidget(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekVolume(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekPosition(url: String?, vararg objects: Any?) {
+            }
+            override fun onTouchScreenSeekLight(url: String?, vararg objects: Any?) {
+            }
+            override fun onPlayError(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickStartThumb(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickBlank(url: String?, vararg objects: Any?) {
+            }
+            override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
+            }
+        })
     }
 
 }
