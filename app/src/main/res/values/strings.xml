@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">听JIAN</string>
-    <string name="app_name_red" translatable="false">射击游戏-红队</string>
-    <string name="app_name_green" translatable="false">射击游戏-绿队</string>
+    <string name="app_name_red" translatable="false">听JIAN-红队</string>
+    <string name="app_name_green" translatable="false">听JIAN-绿队</string>
 </resources>
