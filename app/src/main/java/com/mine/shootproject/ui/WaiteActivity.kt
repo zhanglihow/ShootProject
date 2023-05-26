@@ -64,10 +64,10 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
         }
 
         //todo test
-        GlobalScope.launch {
-            delay(2000)
-            start()
-        }
+//        GlobalScope.launch {
+//            delay(2000)
+//            start()
+//        }
     }
 
     override fun initVM() {
