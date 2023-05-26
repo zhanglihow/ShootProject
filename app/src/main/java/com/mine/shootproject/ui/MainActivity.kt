@@ -44,13 +44,13 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
             vb.redView.setOnClickListener {
                 start()
             }
-            Glide.with(this).load(R.drawable.icon_red_ready).into(vb.redView)
+            Glide.with(this).load(R.drawable.icon_red_wait).into(vb.redView)
             startTethering(this)
         } else {
             vb.redView.setOnClickListener {
                 start()
             }
-            Glide.with(this).load(R.drawable.icon_green_ready).into(vb.redView)
+            Glide.with(this).load(R.drawable.icon_green_wait).into(vb.redView)
         }
         SVGAParser(this).decodeFromAssets("home_out.svga", object : SVGAParser.ParseCompletion {
             override fun onComplete(videoItem: SVGAVideoEntity) {

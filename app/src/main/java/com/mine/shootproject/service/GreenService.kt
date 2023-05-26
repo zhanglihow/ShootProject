@@ -71,6 +71,7 @@ class GreenService : Service() {
                     e.printStackTrace()
                     job = null
                     client = null
+                    delay(5000)
                     send(ipAddress, msg)
                 }
 
@@ -105,10 +106,11 @@ class GreenService : Service() {
                         }
                         TyLog.i("str:$str")
                     }
-                } catch (e: IOException) {
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    releaseSocket()
                     EventBus.getDefault().post(ServerStateEvent("出现异常"))
+                    delay(5000)
+                    releaseSocket()
                 }
             }
         }
@@ -148,14 +150,14 @@ class GreenService : Service() {
                 if (str == "绿方连接") {
                     EventBus.getDefault().post(ConnectEvent())
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-                releaseSocket()
                 EventBus.getDefault().post(ServerStateEvent("发送消息失败" + e.message))
+                Thread.sleep(5000)
+                releaseSocket()
             }
         }
         thread.start()
-
     }
 
     /*释放资源*/

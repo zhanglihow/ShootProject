@@ -46,11 +46,6 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
     override fun initView() {
         setCustomActionBar("等待双方准备完成", false)
 
-        if (BuildConfig.FLAVOR == "red") {
-            Glide.with(this).load(R.drawable.icon_red_wait).into(vb.redView)
-        } else {
-            Glide.with(this).load(R.drawable.icon_green_wait).into(vb.redView)
-        }
         SVGAParser(this).decodeFromAssets("home_out.svga", object : SVGAParser.ParseCompletion {
             override fun onComplete(videoItem: SVGAVideoEntity) {
                 vb.outView.setImageDrawable(SVGADrawable(videoItem))
@@ -69,10 +64,10 @@ class WaiteActivity : BaseActivity<BaseViewModel, ActivityWaiteBinding>() {
         }
 
         //todo test
-//        GlobalScope.launch {
-//            delay(2000)
-//            start()
-//        }
+        GlobalScope.launch {
+            delay(2000)
+            start()
+        }
     }
 
     override fun initVM() {

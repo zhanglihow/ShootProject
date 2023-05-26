@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.IOException
 import java.io.PrintWriter
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -63,35 +64,33 @@ class RedService : Service() {
             return
         }
         job = GlobalScope.launch(context = Dispatchers.IO) {
-            TyLog.i("开启 Socket")
-            EventBus.getDefault().post(ServerStateEvent("开启 Socket"))
+            try {
+                TyLog.i("开启 Socket")
+                EventBus.getDefault().post(ServerStateEvent("开启 Socket"))
 
-            if (serverSocket == null) {
-                serverSocket = ServerSocket()
-                serverSocket?.bind(InetSocketAddress(PORT))
-                serverSocket?.reuseAddress = true
-                serverSocket?.soTimeout = 60000
-                if (client == null || client?.isConnected == false) {
-                    EventBus.getDefault().post(ServerStateEvent("等待连接...如果六十秒内未连接成功则放弃"))
-                    try{
-                        client = serverSocket?.accept()
-                    }catch (e:Exception){
-                        e.printStackTrace()
-                        serverSocket=null
-                        job=null
-                        startListener()
+                if (serverSocket == null) {
+                    serverSocket = ServerSocket()
+                    serverSocket?.reuseAddress = true
+                    serverSocket?.bind(InetSocketAddress(PORT))
+                    serverSocket?.soTimeout = 60000
+                    if (client == null || client?.isConnected == false) {
+                        EventBus.getDefault().post(ServerStateEvent("等待连接...如果六十秒内未连接成功则放弃"))
+                        try {
+                            client = serverSocket?.accept()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            releaseSocket()
+                        }
                     }
                 }
-            }
-            /*连接成功的话  发送心跳包*/
-            if (client?.isConnected == true) {
-                EventBus.getDefault().post(ServerStateEvent("连接成功"))
-                sendBeatData()
-            } else {
-                releaseSocket()
-            }
+                /*连接成功的话  发送心跳包*/
+                if (client?.isConnected == true) {
+                    EventBus.getDefault().post(ServerStateEvent("连接成功"))
+                    sendBeatData()
+                } else {
+                    releaseSocket()
+                }
 
-            try {
 //                client?.tcpNoDelay = true
 //                client?.sendBufferSize = 4096
 //                // 设置输入流的接收缓冲区大小，默认是4KB，即4096字节
@@ -117,16 +116,18 @@ class RedService : Service() {
                     }
                     TyLog.i("str:$str")
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-                releaseSocket()
                 EventBus.getDefault().post(ServerStateEvent("异常: " + e.message))
+                delay(5000)
+                TyLog.e("5秒后重启")
+                releaseSocket()
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-     fun state(event: PostMsgEvent) {
+    fun state(event: PostMsgEvent) {
         sendMessage(event.msg)
     }
 
@@ -141,7 +142,7 @@ class RedService : Service() {
                 val out = PrintWriter(client?.getOutputStream())
                 out.print(chat)
                 out.flush()
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 releaseSocket()
                 EventBus.getDefault().post(ServerStateEvent("发送心跳异常" + e.message))
@@ -166,6 +167,9 @@ class RedService : Service() {
         job?.cancel()
         beatJob?.cancel()
         client?.close()
+        serverSocket?.close()
+        serverSocket = null
+        job = null
         startListener()
     }
 

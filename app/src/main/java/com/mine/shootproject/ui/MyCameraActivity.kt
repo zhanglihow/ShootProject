@@ -1,5 +1,8 @@
 package com.mine.shootproject.ui
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -7,8 +10,10 @@ import android.os.Bundle
 import android.os.Vibrator
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.mine.shootproject.BuildConfig
 import com.mine.shootproject.R
 import com.mine.shootproject.event.*
@@ -50,9 +55,10 @@ class MyCameraActivity : CameraActivity() {
     private val inVideoView: MuVideoView by lazy {
         findViewById(R.id.video_in_view)
     }
-    private val notVideoView: MuVideoView by lazy {
-        findViewById(R.id.video_not_view)
+    private val backView: ImageView by lazy {
+        findViewById(R.id.back_view)
     }
+
 
     private var mRgba: Mat? = null
     private var mBlobColorRgba: Scalar? = null
@@ -146,6 +152,12 @@ class MyCameraActivity : CameraActivity() {
 
         setContentView(R.layout.activity_camera)
 
+
+        if (BuildConfig.FLAVOR == "red") {
+            Glide.with(this).load(R.drawable.icon_red_wait).into(shootView)
+        } else {
+            Glide.with(this).load(R.drawable.icon_green_wait).into(shootView)
+        }
         shootView.setOnClickListener {
             startShoot()
             TyLog.i("shootMat  shootMat.value:${shootMat}")
@@ -158,14 +170,12 @@ class MyCameraActivity : CameraActivity() {
             }
         }
         EventBus.getDefault().register(this)
-        initVideoView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         setMatJbo?.cancel()
         inVideoView.release()
-        notVideoView.release()
         javaCameraView.disableView()
     }
 
@@ -244,9 +254,9 @@ class MyCameraActivity : CameraActivity() {
                             shootMat = tmp
 //                            TyLog.i("shootMat delay(2000)1111111")
                             delay(2000)
-                            shootMat=null
+                            shootMat = null
                             cancel()
-                            setMatJbo=null
+                            setMatJbo = null
 //                            TyLog.i("shootMat delay(2000)2222222")
                         }
                     }
@@ -292,13 +302,13 @@ class MyCameraActivity : CameraActivity() {
         super.onResume()
         //todo test
 //        if (BuildConfig.FLAVOR == "red") {
-            if (OpenCVLoader.initDebug()) {
-                TyLog.i("initDebug true")
-                baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
-            } else {
-                TyLog.i("initDebug false")
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, baseLoaderCallback)
-            }
+        if (OpenCVLoader.initDebug()) {
+            TyLog.i("initDebug true")
+            baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
+        } else {
+            TyLog.i("initDebug false")
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, baseLoaderCallback)
+        }
 //        }
 
     }
@@ -325,12 +335,9 @@ class MyCameraActivity : CameraActivity() {
      * 未击中
      */
     private fun noShoot() {
-        vibrator.vibrate(200)
+        vibrator.vibrate(100)
         EventBus.getDefault().post(VoiceEvent(7, false))
-        javaCameraView.disableView()
-
-        notVideoView.visibility= View.VISIBLE
-        notVideoView.startPlayLogic()
+//        javaCameraView.disableView()
     }
 
     /**
@@ -339,13 +346,9 @@ class MyCameraActivity : CameraActivity() {
     private fun shootIn() {
         EventBus.getDefault().post(PostMsgEvent("shoot"))
         javaCameraView.disableView()
-        inVideoView.visibility= View.VISIBLE
-        inVideoView.seekOnStart=0
-        inVideoView.startPlayLogic()
-
         vibrator.vibrate(500)
         EventBus.getDefault().post(VoiceEvent(6, false))
-
+        initVideoView("shoot")
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -356,8 +359,8 @@ class MyCameraActivity : CameraActivity() {
             vibrator.vibrate(500)
             EventBus.getDefault().post(VoiceStopEvent(8))
             EventBus.getDefault().post(VoiceEvent(6, false))
-            if (!shootedDialog.isShowing) {
-                shootedDialog.show()
+            if (!inVideoView.isInPlayingState) {
+                initVideoView("out")
             }
         } else if (event.msg.contains("out")) {
             EventBus.getDefault().unregister(this)
@@ -368,125 +371,116 @@ class MyCameraActivity : CameraActivity() {
         }
     }
 
-    private fun initVideoView(){
-        val urlNot = "android.resource://" + packageName + "/" + R.raw.shoot_not_video
-        notVideoView.setUp(urlNot, false,"")
-        notVideoView.setVideoAllCallBack(object: VideoAllCallBack {
-            override fun onStartPrepared(url: String?, vararg objects: Any?) {
-            }
-            override fun onPrepared(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartIcon(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartError(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStop(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStopFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickResume(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickResumeFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickSeekbar(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickSeekbarFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onAutoComplete(url: String?, vararg objects: Any?) {
-                notVideoView.visibility= View.GONE
-                notVideoView.setUp(urlNot, false,"")
-                javaCameraView.enableView()
-                EventBus.getDefault().post(VoiceEvent(8, false))
-            }
+    private fun initVideoView(type: String) {
+        GlobalScope.launch(Dispatchers.Main) {
+            inVideoView.visibility = View.VISIBLE
+            backView.visibility = View.VISIBLE
 
-            override fun onComplete(url: String?, vararg objects: Any?) {
-//                notVideoView.visibility= View.GONE
-//                notVideoView.onVideoReset()
-//                notVideoView.setUp(urlNot, false,"")
-//                javaCameraView.enableView()
-//                EventBus.getDefault().post(VoiceEvent(8, false))
-            }
-            override fun onEnterFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onQuitFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onQuitSmallWidget(url: String?, vararg objects: Any?) {
-            }
+            val holder1: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleX", 2f, 0.5f)
+            val holder2: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleY", 2f, 0.5f)
+            val holder3: PropertyValuesHolder = PropertyValuesHolder.ofFloat("alpha", 1f, 0.5f)
 
-            override fun onEnterSmallWidget(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekVolume(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekPosition(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekLight(url: String?, vararg objects: Any?) {
-            }
-            override fun onPlayError(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartThumb(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickBlank(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
-            }
-        })
+            val objectAnimator: ObjectAnimator =
+                ObjectAnimator.ofPropertyValuesHolder(backView, holder1, holder2, holder3)
+            objectAnimator.duration = 3000
+            objectAnimator.repeatCount = -1
+            objectAnimator.interpolator = LinearInterpolator()
+            objectAnimator.start()
 
-        val url = "android.resource://" + packageName + "/" + R.raw.shoot_ok_video
-        inVideoView.setUp(url, false,"")
-        inVideoView.setVideoAllCallBack(object: VideoAllCallBack {
-            override fun onStartPrepared(url: String?, vararg objects: Any?) {
+            val url = if (type == "out") {
+                "android.resource://" + packageName + "/" + R.raw.shoot_ok_video
+            } else {
+                "android.resource://" + packageName + "/" + R.raw.shoot_not_video
             }
-            override fun onPrepared(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartIcon(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartError(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStop(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStopFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickResume(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickResumeFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickSeekbar(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickSeekbarFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onAutoComplete(url: String?, vararg objects: Any?) {
-                inVideoView.visibility= View.GONE
-                shootDialog.show()
-            }
+            inVideoView.seekOnStart = 0
+            inVideoView.isShowFullAnimation = true
+            inVideoView.setUp(url, false, "")
+            inVideoView.setVideoAllCallBack(object : VideoAllCallBack {
+                override fun onStartPrepared(url: String?, vararg objects: Any?) {
+                }
 
-            override fun onComplete(url: String?, vararg objects: Any?) {
-                inVideoView.visibility= View.GONE
-                shootDialog.show()
-            }
-            override fun onEnterFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onQuitFullscreen(url: String?, vararg objects: Any?) {
-            }
-            override fun onQuitSmallWidget(url: String?, vararg objects: Any?) {
-            }
+                override fun onPrepared(url: String?, vararg objects: Any?) {
+                }
 
-            override fun onEnterSmallWidget(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekVolume(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekPosition(url: String?, vararg objects: Any?) {
-            }
-            override fun onTouchScreenSeekLight(url: String?, vararg objects: Any?) {
-            }
-            override fun onPlayError(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickStartThumb(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickBlank(url: String?, vararg objects: Any?) {
-            }
-            override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
-            }
-        })
+                override fun onClickStartIcon(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickStartError(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickStop(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickStopFullscreen(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickResume(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickResumeFullscreen(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickSeekbar(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickSeekbarFullscreen(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onAutoComplete(url: String?, vararg objects: Any?) {
+                    inVideoView.visibility = View.GONE
+                    if (type == "out") {
+                        shootedDialog.show()
+                    } else {
+                        shootDialog.show()
+                    }
+                }
+
+                override fun onComplete(url: String?, vararg objects: Any?) {
+                    inVideoView.visibility = View.GONE
+                    if (type == "out") {
+                        shootedDialog.show()
+                    } else {
+                        shootDialog.show()
+                    }
+                }
+
+                override fun onEnterFullscreen(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onQuitFullscreen(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onQuitSmallWidget(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onEnterSmallWidget(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onTouchScreenSeekVolume(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onTouchScreenSeekPosition(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onTouchScreenSeekLight(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onPlayError(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickStartThumb(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickBlank(url: String?, vararg objects: Any?) {
+                }
+
+                override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
+                }
+            })
+            delay(3000)
+            backView.visibility = View.GONE
+            inVideoView.startPlayLogic()
+        }
     }
 
 }

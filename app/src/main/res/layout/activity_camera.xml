@@ -17,7 +17,6 @@
         android:id="@+id/shoot_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/icon_start"
         tools:visibility="visible" />
 
     <com.mine.shootproject.weight.MuVideoView
@@ -26,13 +25,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
-    <com.mine.shootproject.weight.MuVideoView
-        android:id="@+id/video_not_view"
-        android:visibility="gone"
+    <ImageView
+        android:id="@+id/back_view"
+        tools:visibility="visible"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+        android:layout_height="match_parent"
+        android:src="@drawable/icon_shoot_view"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tv_state"
