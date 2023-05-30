@@ -140,7 +140,8 @@ public class SoundPoolHelper {
      */
     public void play(@NonNull String ringtoneName, boolean isLoop) {
         if (ringtoneIds.containsKey(ringtoneName)) {
-            soundPool.play(ringtoneIds.get(ringtoneName), 1, 1, 1, isLoop ? -1 : 0, 1);
+            int playState=soundPool.play(ringtoneIds.get(ringtoneName), 1, 1, 1, isLoop ? -1 : 0, 1);
+
         }
     }
 
@@ -155,6 +156,11 @@ public class SoundPoolHelper {
             int value = ringtoneIds.get(key);
             soundPool.stop(ringtoneIds.get(value));
         }
+    }
+
+    public void myPlay(Context context,@RawRes int resId){
+        int id=soundPool.load(context, resId, 1);
+        soundPool.play(id, 1, 1, 1, 0, 1);
     }
 
     /**

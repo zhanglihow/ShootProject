@@ -64,25 +64,33 @@ class VoiceService : Service() {
         when (event.type) {
             1 -> {
                 soundPoolHelper?.play("start_1", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.start1)
             }
             2 -> {
                 soundPoolHelper?.play("start_2", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.start2)
             }
             3 -> {
                 soundPoolHelper?.stop("start_2")
                 soundPoolHelper?.play("all_start", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.all_start)
             }
             4 -> {
                 soundPoolHelper?.play("wait_shoot", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.wait_shoot)
             }
             5 -> {
                 soundPoolHelper?.play("shoot_click", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.shoot_click)
+
             }
             6 -> {
                 soundPoolHelper?.play("shoot_ok", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.shoot_ok)
             }
             7 -> {
                 soundPoolHelper?.play("shoot_not", event.isLoop)
+//                soundPoolHelper?.myPlay(this,R.raw.shoot_not)
             }
             8-> {
                 playLong()

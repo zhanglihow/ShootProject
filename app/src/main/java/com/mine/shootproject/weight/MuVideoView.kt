@@ -2,6 +2,7 @@ package com.mine.shootproject.weight
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import com.mine.shootproject.R
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
@@ -18,5 +19,10 @@ class MuVideoView(context: Context, attrs: AttributeSet) :
 
     override fun getLayoutId(): Int {
         return R.layout.layout_my_video
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return super.onTouchEvent(event)
+
     }
 }

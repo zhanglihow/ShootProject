@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.mine.shootproject.BuildConfig
 import com.mine.shootproject.R
 import com.mine.shootproject.event.*
+import com.mine.shootproject.service.VoiceService
 import com.mine.shootproject.utils.ColorBlobDetector
 import com.mine.shootproject.utils.MyUtils
 import com.mine.shootproject.weight.MuVideoView
@@ -34,7 +35,7 @@ import org.opencv.imgproc.Imgproc
 
 class MyCameraActivity : CameraActivity() {
     companion object {
-        const val AREA_MAX = 200000
+        const val AREA_MAX = 10000
         fun start(context: Context) {
             val intent = Intent(context, MyCameraActivity::class.java)
             context.startActivity(intent)
@@ -152,7 +153,6 @@ class MyCameraActivity : CameraActivity() {
 
         setContentView(R.layout.activity_camera)
 
-
         if (BuildConfig.FLAVOR == "red") {
             Glide.with(this).load(R.drawable.icon_red_wait).into(shootView)
         } else {
@@ -174,6 +174,7 @@ class MyCameraActivity : CameraActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+//        stopService(Intent(this,VoiceService::class.java))
         setMatJbo?.cancel()
         inVideoView.release()
         javaCameraView.disableView()
@@ -221,7 +222,7 @@ class MyCameraActivity : CameraActivity() {
             val mat = if (BuildConfig.FLAVOR == "red") {
                 MyUtils.myGreen(rgbMat)
             } else {
-                MyUtils.myRed(rgbMat)
+                MyUtils.myRed2(rgbMat)
             }
 
             val mask1: Mat = mat.clone()
@@ -374,18 +375,18 @@ class MyCameraActivity : CameraActivity() {
     private fun initVideoView(type: String) {
         GlobalScope.launch(Dispatchers.Main) {
             inVideoView.visibility = View.VISIBLE
-            backView.visibility = View.VISIBLE
+//            backView.visibility = View.VISIBLE
 
-            val holder1: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleX", 2f, 0.5f)
-            val holder2: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleY", 2f, 0.5f)
-            val holder3: PropertyValuesHolder = PropertyValuesHolder.ofFloat("alpha", 1f, 0.5f)
-
-            val objectAnimator: ObjectAnimator =
-                ObjectAnimator.ofPropertyValuesHolder(backView, holder1, holder2, holder3)
-            objectAnimator.duration = 3000
-            objectAnimator.repeatCount = -1
-            objectAnimator.interpolator = LinearInterpolator()
-            objectAnimator.start()
+//            val holder1: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleX", 2f, 0.5f)
+//            val holder2: PropertyValuesHolder = PropertyValuesHolder.ofFloat("scaleY", 2f, 0.5f)
+//            val holder3: PropertyValuesHolder = PropertyValuesHolder.ofFloat("alpha", 1f, 0.5f)
+//
+//            val objectAnimator: ObjectAnimator =
+//                ObjectAnimator.ofPropertyValuesHolder(backView, holder1, holder2, holder3)
+//            objectAnimator.duration = 3000
+//            objectAnimator.repeatCount = -1
+//            objectAnimator.interpolator = LinearInterpolator()
+//            objectAnimator.start()
 
             val url = if (type == "out") {
                 "android.resource://" + packageName + "/" + R.raw.shoot_ok_video
@@ -394,6 +395,8 @@ class MyCameraActivity : CameraActivity() {
             }
             inVideoView.seekOnStart = 0
             inVideoView.isShowFullAnimation = true
+            inVideoView.setIsTouchWigetFull(false)
+            inVideoView.setIsTouchWiget(false)
             inVideoView.setUp(url, false, "")
             inVideoView.setVideoAllCallBack(object : VideoAllCallBack {
                 override fun onStartPrepared(url: String?, vararg objects: Any?) {
@@ -477,8 +480,8 @@ class MyCameraActivity : CameraActivity() {
                 override fun onClickBlankFullscreen(url: String?, vararg objects: Any?) {
                 }
             })
-            delay(3000)
-            backView.visibility = View.GONE
+//            delay(3000)
+//            backView.visibility = View.GONE
             inVideoView.startPlayLogic()
         }
     }

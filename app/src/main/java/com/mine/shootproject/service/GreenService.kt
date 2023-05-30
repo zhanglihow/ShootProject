@@ -57,15 +57,16 @@ class GreenService : Service() {
         }
         job = GlobalScope.launch {
             withContext(context = Dispatchers.IO) {
-                EventBus.getDefault().post(ServerStateEvent("开启 Socket"))
-
-                client = Socket()
-                client?.soTimeout = 60000
-                client?.bind(null)
-
-                EventBus.getDefault().post(ServerStateEvent("如果六十秒内未连接成功则放弃"))
-
                 try {
+                    EventBus.getDefault().post(ServerStateEvent("开启 Socket"))
+
+                    client = Socket()
+                    client?.reuseAddress = true
+                    client?.soTimeout = 60000
+                    client?.bind(null)
+
+                    EventBus.getDefault().post(ServerStateEvent("如果六十秒内未连接成功则放弃"))
+
                     client?.connect(InetSocketAddress(ipAddress, RedService.PORT), 30000)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -124,9 +125,7 @@ class GreenService : Service() {
             val dhcpInfo = wifiManager.dhcpInfo
             if (dhcpInfo != null) {
                 val address = dhcpInfo.gateway
-                return ((address and 0xFF).toString() + "." + (address shr 8 and 0xFF)
-                        + "." + (address shr 16 and 0xFF)
-                        + "." + (address shr 24 and 0xFF))
+                return ((address and 0xFF).toString() + "." + (address shr 8 and 0xFF) + "." + (address shr 16 and 0xFF) + "." + (address shr 24 and 0xFF))
             }
         }
         return ""

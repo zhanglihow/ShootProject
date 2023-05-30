@@ -146,10 +146,10 @@ public class MyUtils {
         int iLowH = 0;
         int iHighH = 10;
 
-        int iLowS = 200;
+        int iLowS = 43;
         int iHighS = 255;
 
-        int iLowV = 200;
+        int iLowV = 46;
         int iHighV = 255;
 
 
@@ -185,7 +185,54 @@ public class MyUtils {
 ////        Mat element = getStructuringElement(MORPH_RECT, new Size(5, 5));
         morphologyEx(imgThresholded, imgThresholded, MORPH_OPEN, element);
 //        element.release();
-        mat.release();
+        imgHSV.release();
+
+        return imgThresholded;
+    }
+
+    public static Mat myRed2(Mat mat) {
+        int iLowH = 156;
+        int iHighH = 180;
+
+        int iLowS = 43;
+        int iHighS = 255;
+
+        int iLowV = 46;
+        int iHighV = 255;
+
+
+        Mat imgHSV = new Mat();
+        List<Mat> hsvSplit = new ArrayList<>();
+        cvtColor(mat, imgHSV, COLOR_RGB2HSV); //Convert the captured frame from BGR to HSV
+
+        //因为我们读取的是彩色图，直方图均衡化需要在HSV空间做
+        split(imgHSV, hsvSplit);
+        equalizeHist(hsvSplit.get(2), hsvSplit.get(2));
+        merge(hsvSplit, imgHSV);
+        Mat imgThresholded = new Mat();
+
+//        inRange(imgHSV, new Scalar(iLowH, iLowS, iLowV), new Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+
+//        Mat m = new Mat();
+//        Utils.bitmapToMat(bitmap_src, m);
+
+//        Mat hsv=new Mat();
+        //android上的是RGBA，所以先转成BGR
+//        Imgproc.cvtColor(mat,hsv,Imgproc.COLOR_RGBA2BGR);
+//        cvtColor(mat,hsv, COLOR_BGR2HSV);
+
+//        Mat r=new Mat();
+
+        inRange(imgHSV, new Scalar(iLowH, iLowS, iLowV), new Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+        //开操作 (去除一些噪点)
+        Mat element = getStructuringElement(MORPH_RECT, new Size(5, 5));
+//
+////        inRange(hsv, new Scalar(iLowH, iLowS, iLowV), new Scalar(iHighH, iHighS, iHighV),r);
+////        Mat element = getStructuringElement(MORPH_RECT, new Size(5, 5));
+        morphologyEx(imgThresholded, imgThresholded, MORPH_OPEN, element);
+//        element.release();
         imgHSV.release();
 
         return imgThresholded;
@@ -193,13 +240,22 @@ public class MyUtils {
 
 
     public static Mat myGreen(Mat mat) {
-        int iLowH = 35;
-        int iHighH = 77;
+//        int iLowH = 35;
+//        int iHighH = 77;
+//
+//        int iLowS = 150;
+//        int iHighS = 255;
+//
+//        int iLowV = 150;
+//        int iHighV = 255;
 
-        int iLowS = 150;
+        int iLowH = 35;
+        int iHighH = 99;
+
+        int iLowS = 43;
         int iHighS = 255;
 
-        int iLowV = 150;
+        int iLowV = 46;
         int iHighV = 255;
 
 
