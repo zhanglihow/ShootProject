@@ -56,9 +56,6 @@ class MyCameraActivity : CameraActivity() {
     private val inVideoView: MuVideoView by lazy {
         findViewById(R.id.video_in_view)
     }
-    private val backView: ImageView by lazy {
-        findViewById(R.id.back_view)
-    }
 
 
     private var mRgba: Mat? = null
