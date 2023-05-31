@@ -51,7 +51,7 @@
 
 
 
-##### 《听JIAN：声音射箭运动游戏》系列作品：
+### 《听JIAN：声音射箭运动游戏》系列作品：
 
 [https://github.com/Changes729/opencv_shoot](https://github.com/Changes729/opencv_shoot)
 
