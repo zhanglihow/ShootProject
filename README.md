@@ -2,6 +2,8 @@
 
 ##### 您好，我是罗珊，我们开发一系列给盲人体验使用的声音体感射箭运动和声音体感射击动作游戏系列产品。这些产品不仅可以让盲人之间共同玩耍，同时可以让盲人和身边视力正常的人一起玩。现在我们准备把游戏的使用说明、安装下载包、程序的开发代码共享给大家，想体验的盲人朋友可以尽情玩耍、有心人可以在此基础上持续开发，共同给这座“晴盲共游”的大脑花园浇水。
 
+#### App下载 [点击下载](https://github.com/zhanglihow/ShootProject/releases)
+
 ![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-01.jpg)
 
 ![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-02.jpg)
