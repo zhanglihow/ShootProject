@@ -1,21 +1,22 @@
 # 《听JIAN：声音射箭运动游戏》
 
-#### 您好，我是罗珊，我们开发一系列给盲人体验使用的声音体感射箭运动和声音体感射击动作游戏系列产品。这些产品不仅可以让盲人之间共同玩耍，同时可以让盲人和身边视力正常的人一起玩。现在我们准备把游戏的使用说明、安装下载包、程序的开发代码共享给大家，想体验的盲人朋友可以尽情玩耍、有心人可以在此基础上持续开发，共同给这座“晴盲共游”的大脑花园浇水。
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-01.jpg)
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-02.jpg)
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-03.jpg)
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-04.jpg)
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-05.jpg)
+
+![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-06.jpg)
 
 #### App下载 [点击下载](https://github.com/zhanglihow/ShootProject/releases)
 
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-01.jpg)
 
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-02.jpg)
-
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-03.jpg)
-
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-04.jpg)
-
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-05.jpg)
-
-![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-06.jpg)
-
+#### 您好，我是罗珊，我们开发一系列给盲人体验使用的声音体感射箭运动和声音体感射击动作游戏系列产品。这些产品不仅可以让盲人之间共同玩耍，同时可以让盲人和身边视力正常的人一起玩。现在我们准备把游戏的使用说明、安装下载包、程序的开发代码共享给大家，想体验的盲人朋友可以尽情玩耍、有心人可以在此基础上持续开发，共同给这座“晴盲共游”的大脑花园浇水。
 
 
 ### 前沿：
@@ -58,3 +59,8 @@
 [https://github.com/Changes729/opencv_shoot](https://github.com/Changes729/opencv_shoot)
 
 [https://github.com/Changes729/unity_shoot_game](https://github.com/Changes729/unity_shoot_game)
+
+
+
+
+## 备注：请大家在持续开发过程中不要忘记了我们原始团队的名字，不要拿我们的开源精神作为作业，比赛等荣誉的最后结果呈现。
