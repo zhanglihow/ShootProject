@@ -1,17 +1,18 @@
 # 《听JIAN：声音射箭运动游戏》
 
+[如遇资源不可见，可跳转至国内环境readme](https://gitee.com/zhanglihow/shoot_readme)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-01.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-01.jpg)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-02.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-02.jpg)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-03.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-03.jpg)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-04.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-04.jpg)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-05.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-05.jpg)
 
-![](https://gitee.com/zhanglihow/shoot_pic/raw/master/device-06.jpg)
+![](https://github.com/zhanglihow/ShootProject/raw/master/pics/device-06.jpg)
 
 #### App下载 [点击下载](https://github.com/zhanglihow/ShootProject/releases)
 
