@@ -170,7 +170,7 @@ GNU通用公共许可协议
 
 　　本GNU通用公共许可协议不允许把你的程序并入私有程序。如果你的程序是某种库，且你想允许它被私有程序链接而使之更有用，请使用GNU较宽松通用公共许可协议。决定前请先查阅<http://www.gnu.org/philosophy/why-not-lgpl.html>。
 
-
+LICENSE-EN:
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
