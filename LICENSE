@@ -1,5 +1,14 @@
 LICENSE-CN:
 
+    ShootProject 版权所有（C）2023 罗珊
+    
+　  本程序为自由软件，在自由软件联盟发布的GNU通用公共许可协议的约束下，你可以对
+  其进行再发布及修改。协议版本为第三版或（随你）更新的版本。
+　我们希望发布的这款程序有用，但不保证，甚至不保证它有经济价值和适合特定用途。详
+  情参见GNU通用公共许可协议。
+　  你理当已收到一份GNU通用公共许可协议的副本，如果没有，请查阅
+  <http://www.gnu.org/licenses/>
+
 GNU通用公共许可协议
 第三版，2007年6月29日
 版权所有 © 2007 自由软件基金会 <http://fsf.org/>
@@ -291,41 +300,24 @@ GNU通用公共许可协议
   的关于放弃本程序相关民事责任的地方法律，除非本程序附带收费的品质担保或责任许
   诺。
 
-【附录：如何将上述条款应用到你的新程序】
-　　如果你开发了一个新程序，并希望它能最大限度地为公众所使用，最好的办法是将其
-  作为自由软件，以使每个人都能在本协议约束下对其再发布及修改。
-　　为此，请在附上以下声明。最安全的做法是将其附在每份源码的开头，以便于最有效
-  地传递免责信息。同时，每个文件至少包含一处“版权”声明和一个协议全文的链接。
-
-　　<用一行来标明程序名及其作用>
-　　版权所有（C）<年份> <作者姓名>
-　　本程序为自由软件，在自由软件联盟发布的GNU通用公共许可协议的约束下，你可以
-  对其进行再发布及修改。协议版本为第三版或（随你）更新的版本。
-　　我们希望发布的这款程序有用，但不保证，甚至不保证它有经济价值和适合特定用途。
-  详情参见GNU通用公共许可协议。
-　　你理当已收到一份GNU通用公共许可协议的副本，如果没有，请查阅
-  <http://www.gnu.org/licenses/>
-
-　　同时提供你的电子邮件地址或传统的邮件联系方式。
-
-　　如果该程序是交互式的，让它在交互模式下输出类似下面的一段声明：
-
-　　ShootProject 版权所有（C）2023 罗珊
-  
-　　本程序从未提供品质担保，输入'show w'可查看详情。这是款自由软件，欢迎你在
-  满足一定条件后对其再发布，输入'show c'可查看详情。
-
-　　例子中的命令'show w'和'show c'应用于显示GNU通用公共许可协议相应的部分。
-  当然你也可以因地制宜地选用别的方式，对图形界面程序可以用“关于”菜单。
-
-　　如果你之上存在雇主（你是码农）或校方，你还应当让他们在必要时为此程序签署
-  放弃版权声明。详情参见<http://www.gnu.org/licenses/>。
-
-　　本GNU通用公共许可协议不允许把你的程序并入私有程序。如果你的程序是某种库，
-  且你想允许它被私有程序链接而使之更有用，请使用GNU较宽松通用公共许可协议。
-  决定前请先查阅<http://www.gnu.org/philosophy/why-not-lgpl.html>。
 
 LICENSE-EN:
+
+    ShootProject  Copyright (C) 2023  Shan Luo
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
@@ -948,56 +940,3 @@ Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
 
                      END OF TERMS AND CONDITIONS
-
-            How to Apply These Terms to Your New Programs
-
-  If you develop a new program, and you want it to be of the greatest
-possible use to the public, the best way to achieve this is to make it
-free software which everyone can redistribute and change under these terms.
-
-  To do so, attach the following notices to the program.  It is safest
-to attach them to the start of each source file to most effectively
-state the exclusion of warranty; and each file should have at least
-the "copyright" line and a pointer to where the full notice is found.
-
-    <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-Also add information on how to contact you by electronic and paper mail.
-
-  If the program does terminal interaction, make it output a short
-notice like this when it starts in an interactive mode:
-
-    ShootProject  Copyright (C) 2023  Shan Luo
-    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
-    This is free software, and you are welcome to redistribute it
-    under certain conditions; type `show c' for details.
-
-The hypothetical commands `show w' and `show c' should show the appropriate
-parts of the General Public License.  Of course, your program's commands
-might be different; for a GUI interface, you would use an "about box".
-
-  You should also get your employer (if you work as a programmer) or school,
-if any, to sign a "copyright disclaimer" for the program, if necessary.
-For more information on this, and how to apply and follow the GNU GPL, see
-<https://www.gnu.org/licenses/>.
-
-  The GNU General Public License does not permit incorporating your program
-into proprietary programs.  If your program is a subroutine library, you
-may consider it more useful to permit linking proprietary applications with
-the library.  If this is what you want to do, use the GNU Lesser General
-Public License instead of this License.  But first, please read
-<https://www.gnu.org/licenses/why-not-lgpl.html>.
