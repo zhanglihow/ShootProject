@@ -62,6 +62,7 @@
 [https://github.com/Changes729/unity_shoot_game](https://github.com/Changes729/unity_shoot_game)
 
 
-
+## LICENSE
+[https://github.com/zhanglihow/ShootProject/blob/master/LICENSE](https://github.com/zhanglihow/ShootProject/blob/master/LICENSE)
 
 ## 备注：请大家在持续开发过程中不要忘记了我们原始团队的名字，不要拿我们的开源精神作为作业，比赛等荣誉的最后结果呈现。
